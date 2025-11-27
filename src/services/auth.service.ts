@@ -1,4 +1,5 @@
 import prisma from "../config/prisma.client.config"
+import { signToken } from "../utils/jwt.util";
 
 const signUp = async ({
     username,
@@ -16,7 +17,7 @@ const signUp = async ({
             password,
             role: "User",
         }
-    })
+    });
     return newUser;
 }
 
@@ -29,7 +30,27 @@ const signInByUsername = async (username: string) => {
     return foundUser;
 }
 
+const signAccessToken = (user: any) => {
+    const payload = {
+        username: user.username,
+        role: user.role
+    }
+    const accessToken = signToken(payload, "1d");
+    return accessToken;
+}
+
+const signRefreshToken = (user: any) => {
+    const payload = {
+        username: user.username,
+        role: user.role
+    }
+    const accessToken = signToken(payload, "7d");
+    return accessToken;
+}
+
 export {
     signInByUsername,
-    signUp
+    signUp,
+    signAccessToken,
+    signRefreshToken
 }

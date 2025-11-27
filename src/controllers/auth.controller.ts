@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { signInByUsername, signUp } from "../services/auth.service";
+import { signAccessToken, signInByUsername, signRefreshToken, signUp } from "../services/auth.service";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
 
 
@@ -20,13 +20,16 @@ const signUpController = async (req: Request, res: Response) => {
         password: hashedPassword
     });
 
+    const accessToken = signAccessToken(user);
+    const refreshToken = signRefreshToken(user);
+
     return res.status(201).json({
         statusCode: 201,
         success: true,
         message: "SIGN UP SUCCESSFULLY",
         data: {
-            accessToken: "123456789",
-            refreshToken: "123456789"
+            accessToken: accessToken,
+            refreshToken: refreshToken
         },
         error: null
     })
@@ -48,13 +51,16 @@ const signInController = async (req: Request, res: Response) => {
         throw new Error("Password is not incorrect");
     }
 
+    const accessToken = signAccessToken(userFound);
+    const refreshToken = signRefreshToken(userFound);
+
     return res.status(200).json({
         statusCode: 200,
         success: true,
         message: "SIGN IN SUCCESSFULLY",
         data: {
-            accessToken: "123456789",
-            refreshToken: "123456789"
+            accessToken: accessToken,
+            refreshToken: refreshToken
         },
         error: null
     });

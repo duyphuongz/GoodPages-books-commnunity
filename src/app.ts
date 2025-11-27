@@ -1,9 +1,11 @@
 import express, { Request, Response } from "express";
 import router from "./routers/router";
-import { json } from "stream/consumers";
+import passport from "./config/passport.config";
 
 const app = express();
 const PORT = 3000;
+
+passport.initialize();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
