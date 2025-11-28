@@ -1,4 +1,4 @@
-import prisma from "../config/prisma.client.config";
+import prisma from "../configs/prisma.client.config";
 
 const findUserByUsername = async (username: string) => {
     const userFound = await prisma.user.findUnique({
@@ -18,7 +18,20 @@ const findUserByEmail = async (email: string) => {
     return userFound;
 }
 
+const updatePasswordOfUser = async (password: string, username: string) => {
+    const updatedUser = prisma.user.update({
+        where: {
+            username
+        },
+        data: {
+            password
+        }
+    })
+    return updatedUser;
+}
+
 export {
     findUserByUsername,
-    findUserByEmail
+    findUserByEmail,
+    updatePasswordOfUser
 }

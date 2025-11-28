@@ -1,4 +1,4 @@
-import { RestResponse } from "../responseDto/rest-response.dto"
+import { RestResponse } from "../responseDtos/rest-response.dto"
 
 const responseMapper = (
     {

@@ -1,5 +1,6 @@
-import prisma from "../config/prisma.client.config"
+import prisma from "../configs/prisma.client.config"
 import { signToken } from "../utils/jwt.util";
+import { getVietnamTimeISO } from "../utils/time.utils";
 
 const signUp = async ({
     username,
@@ -19,7 +20,9 @@ const signUp = async ({
                 connect: {
                     roleName: "READER"
                 }
-            }
+            },
+            createdAt: getVietnamTimeISO(),
+            updatedAt: getVietnamTimeISO()
         },
         include: {
             role: true

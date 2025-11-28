@@ -1,10 +1,11 @@
 import { Request, Response } from "express";
 import { signAccessToken, signInByUsername, signRefreshToken, signUp } from "../services/auth.service";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
-import { findUserByEmail, findUserByUsername } from "../services/user.service";
-import { signUpMapper } from "../mapper/sign-up.mapper";
-import { responseMapper } from "../mapper/rest-response.mapper";
-import { signInMapper } from "../mapper/sign-in.mapper";
+import { findUserByEmail, findUserByUsername, updatePasswordOfUser } from "../services/user.service";
+import { responseMapper } from "../mappers/rest-response.mapper";
+import { User } from "../generated/prisma/client";
+import { changePasswordMapper, signInMapper, signUpMapper } from "../mappers/auth.mapper";
+import HTTP_STATUS from "../constants/httpStatus.constanst";
 
 
 const signUpController = async (req: Request, res: Response) => {
@@ -40,14 +41,14 @@ const signUpController = async (req: Request, res: Response) => {
     const responseData = signUpMapper(user, accessToken, refreshToken);
 
     const response = {
-        statusCode: 201,
+        statusCode: HTTP_STATUS.CREATED,
         isSuccess: true,
         message: "SIGN UP SUCCESSFULLY",
         data: responseData,
         error: null
     }
 
-    return res.status(201).json(responseMapper(response));
+    return res.status(HTTP_STATUS.CREATED).json(responseMapper(response));
 }
 
 const signInController = async (req: Request, res: Response) => {
@@ -71,8 +72,8 @@ const signInController = async (req: Request, res: Response) => {
 
     const responseData = signInMapper(userFound, accessToken, refreshToken);
 
-    return res.status(200).json(responseMapper({
-        statusCode: 200,
+    return res.status(HTTP_STATUS.OK).json(responseMapper({
+        statusCode: HTTP_STATUS.OK,
         isSuccess: true,
         message: "SIGN IN SUCCESSFULLY",
         data: responseData,
@@ -80,7 +81,37 @@ const signInController = async (req: Request, res: Response) => {
     }));
 }
 
+const changePasswordController = async (req: Request, res: Response) => {
+    const { username, password } = req.user as User;
+    const { oldPassword, newPassword, confirmNewPassword } = req.body;
+
+    const isOldPasswordMatched = comparePassword(oldPassword, password);
+    if (!isOldPasswordMatched) {
+        throw new Error("Old password is not matched together");
+    }
+
+    if (newPassword != confirmNewPassword) {
+        throw new Error("Password and Confirm Password is not matched");
+    }
+
+    const hashedPassword = await hashPassword(newPassword);
+
+    const updatedUser = await updatePasswordOfUser(hashedPassword, username);
+
+    const accessToken = signAccessToken(updatedUser);
+    const refreshToken = signRefreshToken(updatedUser);
+
+    return res.status(HTTP_STATUS.OK).json(responseMapper({
+        statusCode: HTTP_STATUS.OK,
+        isSuccess: true,
+        message: "CHANGE PASSWORD SUCCESSFULLY",
+        data: changePasswordMapper(accessToken, refreshToken),
+        error: null
+    }));
+}
+
 export {
     signInController,
-    signUpController
+    signUpController,
+    changePasswordController
 }
