@@ -34,12 +34,50 @@ const changePasswordMiddleware = (req: Request, res: Response, next: NextFunctio
     }
 }
 
-// const validateAdminToken = (req: Request, res: Response, next: NextFunction) => {
+const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { role } = req.user as { username: string, email: string, role: string } || "UNAUTHORIZE";
+        if ("ADMIN" == role) {
+            next();
+        } else {
+            throw new Error("Your role is unauthorize");
+        }
+    } catch (error) {
+        throw error;
+    }
+}
 
-// }
+const isAuthor = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { role } = req.user as { username: string, email: string, role: string } || "UNAUTHORIZE";
+        if ("AUTHOR" == role) {
+            next();
+        } else {
+            throw new Error("Your role is unauthorize");
+        }
+    } catch (error) {
+        throw error;
+    }
+}
+
+const isUser = (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const { role } = req.user as { username: string, email: string, role: string } || "UNAUTHORIZE";
+        if ("READER" == role) {
+            next();
+        } else {
+            throw new Error("Your role is unauthorize");
+        }
+    } catch (error) {
+        throw error;
+    }
+}
 
 export {
     signInMiddleware,
     signUpMiddleware,
-    changePasswordMiddleware
+    changePasswordMiddleware,
+    isAdmin,
+    isAuthor,
+    isUser
 }

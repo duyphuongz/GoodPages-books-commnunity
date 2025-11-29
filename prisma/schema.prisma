@@ -94,7 +94,7 @@ model Book {
   authors     Author[] // nhiều tác giả
   reviews     Review[] // nhiều review
   favoritedBy Favorite[] // user nào đã 'favorite' sách này
-  categories  Genre[]    @relation("BookGenres") // thể loại
+  genres      Genre[]    @relation("BookGenres") // thể loại
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")

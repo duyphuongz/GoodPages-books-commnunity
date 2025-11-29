@@ -1,5 +1,5 @@
 
-class metaPaging {
+class MetaPaging {
     page: any;
     limit: any;
     totalItems: any;
@@ -29,4 +29,8 @@ class metaPaging {
         this.hasNextPage = hasNextPage;
         this.hasPreviousPage = hasPreviousPage;
     }
+}
+
+export {
+    MetaPaging
 }
