@@ -248,7 +248,13 @@ const deleteBookController = async (req: Request, res: Response, next: NextFunct
                 status: BookStatus.ARCHIVED
             }
         })
-        return result;
+        return res.status(HTTP_STATUS.OK).json(responseMapper({
+            statusCode: HTTP_STATUS.OK,
+            isSuccess: true,
+            message: "DELETE BOOK SUCCESSFULLY",
+            data: null,
+            error: null
+        }));
     } catch (error) {
         throw error;
     }
