@@ -3,28 +3,35 @@ version: "3.9"
 services:
   api:
     build: .
-    container_name: goodpages-api
+    container_name: goodpages
     ports:
-      - "3000:3000"         # host:container
+      - "3000:3000"
     env_file:
-      - .env                # lấy DATABASE_URL, PORT từ .env
+      - .env
+    environment:
+      DATABASE_HOST: ${DATABASE_HOST}
+      DATABASE_NAME: ${DATABASE_NAME}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+      DATABASE_PORT: ${DATABASE_PORT}
+      DATABASE_URL: mysql://admin:12345@mysql:3306/goodpages_db
+      DATABASE_USER: ${DATABASE_USER}
     depends_on:
       - mysql
     volumes:
-      - .:/app              # map code từ máy vào container (hot reload)
-      - /app/node_modules   # giữ node_modules của container, tránh bị đè
+      - .:/app
+      - /app/node_modules
 
   mysql:
     image: mysql:8
-    container_name: goodpages-mysql
+    container_name: mysql-goodpages
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: rootpassword
-      MYSQL_DATABASE: goodpages_db
-      MYSQL_USER: goodpages_user
-      MYSQL_PASSWORD: goodpages_pass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "3306:3306"         # nếu muốn connect MySQL từ bên ngoài (DBeaver, etc.)
+      - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
 

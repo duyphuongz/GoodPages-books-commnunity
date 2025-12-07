@@ -1,26 +1,20 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `username` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NULL,
+    `email` VARCHAR(191) NOT NULL,
+    `bio` VARCHAR(191) NULL,
+    `password` VARCHAR(191) NOT NULL,
+    `avatar_url` VARCHAR(191) NULL,
+    `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updated_at` DATETIME(3) NOT NULL,
+    `roleId` INTEGER NULL,
 
-  - You are about to drop the column `avatar_url` on the `user` table. All the data in the column will be lost.
-  - You are about to drop the column `bio` on the `user` table. All the data in the column will be lost.
-  - You are about to drop the column `username` on the `user` table. All the data in the column will be lost.
-
-*/
--- DropForeignKey
-ALTER TABLE `user` DROP FOREIGN KEY `user_roleId_fkey`;
-
--- DropIndex
-DROP INDEX `user_roleId_fkey` ON `user`;
-
--- DropIndex
-DROP INDEX `user_username_key` ON `user`;
-
--- AlterTable
-ALTER TABLE `user` DROP COLUMN `avatar_url`,
-    DROP COLUMN `bio`,
-    DROP COLUMN `username`,
-    ALTER COLUMN `updated_at` DROP DEFAULT,
-    MODIFY `roleId` INTEGER NULL;
+    UNIQUE INDEX `User_username_key`(`username`),
+    UNIQUE INDEX `User_email_key`(`email`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Author` (
@@ -33,6 +27,16 @@ CREATE TABLE `Author` (
     `updated_at` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `Author_userId_key`(`userId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `role` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `role_name` ENUM('ADMIN', 'READER', 'AUTHOR') NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `role_role_name_key`(`role_name`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -52,6 +56,7 @@ CREATE TABLE `Book` (
     `ratings_count` INTEGER NOT NULL DEFAULT 0,
     `reviews_count` INTEGER NOT NULL DEFAULT 0,
     `cover_image_url` VARCHAR(191) NULL,
+    `status` ENUM('DRAFT', 'PUBLISHED', 'ARCHIVED') NOT NULL DEFAULT 'DRAFT',
     `created_at` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updated_at` DATETIME(3) NOT NULL,
 
@@ -142,6 +147,3 @@ ALTER TABLE `_BookGenres` ADD CONSTRAINT `_BookGenres_A_fkey` FOREIGN KEY (`A`) 
 
 -- AddForeignKey
 ALTER TABLE `_BookGenres` ADD CONSTRAINT `_BookGenres_B_fkey` FOREIGN KEY (`B`) REFERENCES `Genre`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
-
--- RenameIndex
-ALTER TABLE `user` RENAME INDEX `user_email_key` TO `User_email_key`;

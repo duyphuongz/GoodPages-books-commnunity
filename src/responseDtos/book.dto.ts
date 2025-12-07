@@ -1,5 +1,6 @@
 import { Book, BookFormat } from "../generated/prisma/client";
-import { MetaPaging } from "./meta.dto";
+import { MetaPaging } from "../type";
+import { MetaPagingDTO } from "./meta.dto";
 
 class booksPagingResponse {
     books: Book[] | any;
