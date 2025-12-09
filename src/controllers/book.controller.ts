@@ -128,7 +128,7 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
             imageCloudUrl,
             authorsId,
             genresId
-        }
+        };
 
         const result = await addBook(newBook);
 
