@@ -3,9 +3,9 @@ import transporter from "../configs/nodemailer.config";
 import { SendEmailOption } from "../type";
 
 const generateSendOTPTemplate = (email: string, otp: string) => {
-    return `
+  return `
   <div style="
-      font-family: 'Georgia', serif;
+      font-family: 'Times New Roman', Times, serif;
       background-color: #fdf8e7;
       padding: 24px;
       border-radius: 8px;
@@ -15,15 +15,15 @@ const generateSendOTPTemplate = (email: string, otp: string) => {
       color: #4a3f35;
     ">
       
-    <h2 style="text-align: center; margin-bottom: 10px; color: #3a2f28;">
+    <h2 style="text-align: center; margin-bottom: 10px; color: #3a2f28; font-family: 'Times New Roman', Times, serif;">
       📖 GoodPages Verification
     </h2>
 
-    <p style="font-size: 15px; line-height: 1.6;">
+    <p style="font-size: 15px; line-height: 1.6; font-family: 'Times New Roman', Times, serif;">
       Xin chào <strong>${email}</strong>,
     </p>
 
-    <p style="font-size: 15px; line-height: 1.6;">
+    <p style="font-size: 15px; line-height: 1.6; font-family: 'Times New Roman', Times, serif;">
       Chúng tôi vừa nhận được yêu cầu xác minh từ tài khoản của bạn tại 
       <strong>GoodPages</strong> — nơi lưu giữ và chia sẻ niềm yêu thích sách.
     </p>
@@ -35,6 +35,7 @@ const generateSendOTPTemplate = (email: string, otp: string) => {
         margin: 24px 0;
         border-radius: 4px;
         text-align: center;
+        font-family: 'Times New Roman', Times, serif;
       ">
       <p style="margin: 0 0 6px; font-size: 14px;">Mã OTP của bạn:</p>
       <div style="
@@ -42,6 +43,7 @@ const generateSendOTPTemplate = (email: string, otp: string) => {
           font-weight: bold;
           letter-spacing: 6px;
           color: #8b5e34;
+          font-family: 'Times New Roman', Times, serif;
         ">
         ${otp}
       </div>
@@ -50,39 +52,40 @@ const generateSendOTPTemplate = (email: string, otp: string) => {
       </p>
     </div>
 
-    <p style="font-size: 14px; line-height: 1.6;">
+    <p style="font-size: 14px; line-height: 1.6; font-family: 'Times New Roman', Times, serif;">
       Nếu bạn không yêu cầu mã này, hãy bỏ qua email.  
       Tài khoản của bạn vẫn an toàn — giống như một cuốn sách quý trong thư viện được khóa cẩn thận.
     </p>
 
-    <p style="margin-top: 30px; font-size: 14px; color: #6b5b4a; text-align: center;">
+    <p style="margin-top: 30px; font-size: 14px; color: #6b5b4a; text-align: center; font-family: 'Times New Roman', Times, serif;">
       Trân trọng,<br>
       <strong>GoodPages Team</strong>
     </p>
 
     <hr style="margin-top: 26px; border: none; border-top: 1px dashed #c5b8a5;">
-    <p style="font-size: 12px; text-align: center; color: #8d816f;">
+    <p style="font-size: 12px; text-align: center; color: #8d816f; font-family: 'Times New Roman', Times, serif;">
       Đây là email tự động, vui lòng không trả lời lại.
     </p>
   </div>
   `;
-}
+};
+
 
 const sendEmail = async ({ to, subject, html, text }: SendEmailOption) => {
-    const mailOptions = {
-        from: `"GoodPages" <${process.env.EMAIL_USER}>`,
-        to,
-        subject,
-        text,
-        html
-    };
+  const mailOptions = {
+    from: `"GoodPages" <${process.env.EMAIL_USER}>`,
+    to,
+    subject,
+    text,
+    html
+  };
 
-    const info = await transporter.sendMail(mailOptions);
-    console.log(">>> email info:", info);
-    return info;
+  const info = await transporter.sendMail(mailOptions);
+  console.log(">>> email info:", info);
+  return info;
 }
 
 export {
-    sendEmail,
-    generateSendOTPTemplate
+  sendEmail,
+  generateSendOTPTemplate
 }

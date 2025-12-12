@@ -3,6 +3,7 @@ import { UserWithRole } from "../type";
 import { signToken } from "../utils/jwt.util";
 import { generateOtp } from "../utils/string.util";
 import { generateSendOTPTemplate, sendEmail } from "./email.service";
+import { extractRecord } from "./redis.service";
 
 const signUp = async ({
     username,
@@ -32,11 +33,34 @@ const signUp = async ({
         const emailOTPTemplate = generateSendOTPTemplate(newUser.email, generateOtp());
         const emailInfo = await sendEmail({
             to: newUser.email,
-            subject: "Verify OTP",
+            subject: "GoodPages OTP Verification",
             html: emailOTPTemplate
         });
 
         return newUser;
+    } catch (error) {
+        throw error;
+    }
+}
+
+const verifyOtp = async (otp: String, email: string) => {
+    try {
+        //extract redis record by key
+        const rawRedisValue = await extractRecord(`otp:${email}`);
+        console.log(">>> rawRedisValue:", rawRedisValue);
+
+        if (rawRedisValue == undefined) {
+            throw new Error("Redis record not found");
+        }
+
+        const pendingUser = JSON.parse(rawRedisValue);
+        console.log(">>> pendingUser:", pendingUser);
+
+        if (otp != pendingUser.otp) {
+            throw new Error("OTP is not matched");
+        }
+
+        return pendingUser;
     } catch (error) {
         throw error;
     }
@@ -79,6 +103,7 @@ const signRefreshToken = (user: UserWithRole) => {
 export {
     signInByUsername,
     signUp,
+    verifyOtp,
     signAccessToken,
     signRefreshToken
 }

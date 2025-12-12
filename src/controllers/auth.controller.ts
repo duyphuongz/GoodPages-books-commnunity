@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { signAccessToken, signInByUsername, signRefreshToken, signUp } from "../services/auth.service";
+import { signAccessToken, signInByUsername, signRefreshToken, signUp, verifyOtp } from "../services/auth.service";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
 import { findUserByEmail, findUserByUsername, updatePasswordOfUser } from "../services/user.service";
 import { responseMapper } from "../mappers/rest-response.mapper";
@@ -7,6 +7,9 @@ import { User } from "../generated/prisma/client";
 import { changePasswordMapper, signInMapper, signUpMapper } from "../mappers/auth.mapper";
 import HTTP_STATUS from "../constants/httpStatus.constanst";
 import { RestResponse, SignInResponse, UserWithRole, UserWithRoleOrNull } from "../type";
+import { generateOtp } from "../utils/string.util";
+import { extractRecord, setNewRecord } from "../services/redis.service";
+import { generateSendOTPTemplate, sendEmail } from "../services/email.service";
 
 
 const signUpController = async (req: Request, res: Response) => {
@@ -28,29 +31,61 @@ const signUpController = async (req: Request, res: Response) => {
         throw new Error("Password and Confirm Password is not matched");
     }
 
-    let hashedPassword = await hashPassword(password);
-
-    const user: UserWithRole = await signUp({
+    const otp = generateOtp();
+    const pendingUser = {
+        otp,
         username,
         email,
-        password: hashedPassword
+        password
+    };
+
+    const redisResult = await setNewRecord(`otp:${email}`, pendingUser);
+    const emailOtpTemplate = generateSendOTPTemplate(email, otp);
+
+    const emailResult = await sendEmail({
+        to: email,
+        subject: "GoodPages OTP Verification",
+        html: emailOtpTemplate
     });
-
-    const accessToken = signAccessToken(user);
-    const refreshToken = signRefreshToken(user);
-
-    const responseData: SignInResponse = signUpMapper(user, accessToken, refreshToken);
+    console.log(">>> emailResult:", emailResult);
 
     const response: RestResponse = {
         statusCode: HTTP_STATUS.CREATED,
         isSuccess: true,
-        message: "SIGN UP SUCCESSFULLY",
-        data: responseData,
+        message: "SEND OTP EMAIL SUCCESSFULLY",
+        data: {
+            message: "OTP sent to email: " + email
+        },
         error: null
     }
 
     return res.status(HTTP_STATUS.CREATED).json(responseMapper(response));
-}
+};
+
+const verifyOtpAndSignUpController = async (req: Request, res: Response) => {
+    try {
+        const { otp, email } = req.body;
+        //verify otp 
+        const { username, password } = await verifyOtp(otp, email);
+
+        //create new user 
+        const newUser = await signUp({ username, password, email });
+
+        const accessToken = signAccessToken(newUser);
+        const refreshToken = signRefreshToken(newUser);
+
+        const responseData = signInMapper(newUser, accessToken, refreshToken);
+        return res.status(HTTP_STATUS.OK).json(responseMapper({
+            statusCode: 201,
+            isSuccess: true,
+            message: "SIGN UP SUCCESSFULLY",
+            data: responseData,
+            error: null
+        }));
+    } catch (error) {
+        throw error;
+    }
+};
 
 const signInController = async (req: Request, res: Response) => {
     const { username, password } = req.body;
@@ -123,6 +158,7 @@ const changePasswordController = async (req: Request, res: Response) => {
 
 export {
     signInController,
+    verifyOtpAndSignUpController,
     signUpController,
     changePasswordController
 }

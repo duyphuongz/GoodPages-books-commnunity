@@ -19,13 +19,14 @@ services:
       DATABASE_USER: ${DATABASE_USER}
     depends_on:
       - mysql
+      - redis
     volumes:
       - .:/app
       - /app/node_modules
 
   mysql:
     image: mysql:8
-    container_name: mysql-goodpages
+    container_name: mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -37,5 +38,16 @@ services:
     volumes:
       - mysql_data:/var/lib/mysql
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    # Nếu muốn set password:
+    # command: ["redis-server", "--requirepass", "yourpassword"]
+
 volumes:
   mysql_data:
+  redis-data:
