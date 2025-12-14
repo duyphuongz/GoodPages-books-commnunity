@@ -14,6 +14,11 @@ const signUpSchema = z.object({
         message: "Passwords do not match",
     });
 
+const verifyOtpSignUpSchema = z.object({
+    otp: z.string().min(6, "OTP must be 6 characters").max(6, "OTP must be 6 characters"),
+    email: z.string().min(1, "Email is required")
+});
+
 const signInSchema = z.object({
     username: z.string().min(1, "username is required"),
     password: z.string()
@@ -47,6 +52,7 @@ const deleteBookSchema = z.object({
 
 export {
     signUpSchema,
+    verifyOtpSignUpSchema,
     signInSchema,
     changePasswordSchema,
     deleteBookSchema

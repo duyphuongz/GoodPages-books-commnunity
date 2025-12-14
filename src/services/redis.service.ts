@@ -2,8 +2,11 @@ import redis from "../configs/redis.config"
 
 
 const setNewRecord = async (key: string, data: any) => {
-    const result = await redis.set(key, data, "EX", "300");
+    const result = await redis.set(key, JSON.stringify(data), "EX", "300");
     console.log(">>> [setNewRecord]:", result);
+    if ("OK" != result) {
+        throw new Error("Redis set failed");
+    }
     return result;
 }
 
@@ -12,7 +15,14 @@ const extractRecord = async (key: string) => {
     return result;
 }
 
+const deleteRecord = async (key: string) => {
+    let result = await redis.del(key);
+    console.log(">>> result:", result);
+    return result;
+};
+
 export {
     setNewRecord,
-    extractRecord
+    extractRecord,
+    deleteRecord
 }

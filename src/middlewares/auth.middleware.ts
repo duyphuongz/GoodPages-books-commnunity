@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { changePasswordSchema, signInSchema, signUpSchema } from "../validations/auth.schema";
+import { changePasswordSchema, signInSchema, signUpSchema, verifyOtpSignUpSchema } from "../validations/auth.schema";
 
 const signInMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -14,6 +14,16 @@ const signInMiddleware = (req: Request, res: Response, next: NextFunction) => {
 const signUpMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
         const parsedData = signUpSchema.parse(req.body);
+        req.body = parsedData;
+        next();
+    } catch (error) {
+        throw error;
+    }
+}
+
+const verifyOtpSignUpMiddleware = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+        const parsedData = verifyOtpSignUpSchema.parse(req.body);
         req.body = parsedData;
         next();
     } catch (error) {
@@ -74,6 +84,7 @@ const isUser = (req: Request, res: Response, next: NextFunction) => {
 export {
     signInMiddleware,
     signUpMiddleware,
+    verifyOtpSignUpMiddleware,
     changePasswordMiddleware,
     isAdmin,
     isAuthor,

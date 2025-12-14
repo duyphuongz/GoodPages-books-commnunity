@@ -3,7 +3,7 @@ import { UserWithRole } from "../type";
 import { signToken } from "../utils/jwt.util";
 import { generateOtp } from "../utils/string.util";
 import { generateSendOTPTemplate, sendEmail } from "./email.service";
-import { extractRecord } from "./redis.service";
+import { deleteRecord, extractRecord } from "./redis.service";
 
 const signUp = async ({
     username,
@@ -30,12 +30,6 @@ const signUp = async ({
                 role: true
             }
         });
-        const emailOTPTemplate = generateSendOTPTemplate(newUser.email, generateOtp());
-        const emailInfo = await sendEmail({
-            to: newUser.email,
-            subject: "GoodPages OTP Verification",
-            html: emailOTPTemplate
-        });
 
         return newUser;
     } catch (error) {
@@ -47,18 +41,20 @@ const verifyOtp = async (otp: String, email: string) => {
     try {
         //extract redis record by key
         const rawRedisValue = await extractRecord(`otp:${email}`);
-        console.log(">>> rawRedisValue:", rawRedisValue);
+        console.log(">>> rawRedisValue:", String(rawRedisValue));
 
         if (rawRedisValue == undefined) {
             throw new Error("Redis record not found");
         }
 
-        const pendingUser = JSON.parse(rawRedisValue);
+        const pendingUser = await JSON.parse(String(rawRedisValue));
         console.log(">>> pendingUser:", pendingUser);
 
         if (otp != pendingUser.otp) {
             throw new Error("OTP is not matched");
         }
+
+        const result = await deleteRecord(`otp:${email}`);
 
         return pendingUser;
     } catch (error) {
