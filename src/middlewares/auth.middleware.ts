@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { changePasswordSchema, signInSchema, signUpSchema, verifyOtpSignUpSchema } from "../validations/auth.schema";
+import passport from "passport";
 
 const signInMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -29,6 +30,10 @@ const verifyOtpSignUpMiddleware = async (req: Request, res: Response, next: Next
     } catch (error) {
         throw error;
     }
+}
+
+const validateToken = () => {
+    return passport.authenticate("jwt", { session: false });
 }
 
 const changePasswordMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -85,6 +90,7 @@ export {
     signInMiddleware,
     signUpMiddleware,
     verifyOtpSignUpMiddleware,
+    validateToken,
     changePasswordMiddleware,
     isAdmin,
     isAuthor,

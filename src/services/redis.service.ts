@@ -21,8 +21,14 @@ const deleteRecord = async (key: string) => {
     return result;
 };
 
+const setRoleForUsername = async ({ username, role, expiresIn }: { username: string, role: string, expiresIn: string | number }) => {
+    let result = await redis.set(`auth:role:${username}`, role, "EX", expiresIn);
+    return result;
+}
+
 export {
     setNewRecord,
+    setRoleForUsername,
     extractRecord,
     deleteRecord
 }
