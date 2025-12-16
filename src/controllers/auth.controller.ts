@@ -18,6 +18,8 @@ const signUpController = async (req: Request, res: Response) => {
     console.log(">> password:", password);
 
     const isUsernamExisted = await findUserByUsername(username);
+    console.log(">>> existedUser:", isUsernamExisted);
+
     if (isUsernamExisted != null) {
         throw new Error("Username has been used");
     }
@@ -32,6 +34,8 @@ const signUpController = async (req: Request, res: Response) => {
     }
 
     const otp = generateOtp();
+    console.log(`>>> otp for ${email}`, otp);
+
     const pendingUser = {
         otp,
         username,
@@ -40,6 +44,8 @@ const signUpController = async (req: Request, res: Response) => {
     };
 
     const redisResult = await setNewRecord(`otp:${email}`, pendingUser);
+    console.log(">>> redisResult: ", redisResult);
+
     const emailOtpTemplate = generateSendOTPTemplate(email, otp);
 
     const emailResult = await sendEmail({

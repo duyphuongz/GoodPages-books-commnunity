@@ -3,7 +3,6 @@ import { Algorithm } from 'jsonwebtoken';
 import { Strategy as JwtStrategy, ExtractJwt, VerifyCallbackWithRequest, StrategyOptionsWithRequest, VerifiedCallback, } from 'passport-jwt';
 import { findUserByUsername, findUserWithRoleByUsername } from '../services/user.service';
 import { extractRecord, setNewRecord, setRoleForUsername } from '../services/redis.service';
-import { RoleName } from '../generated/prisma/enums';
 
 const options: StrategyOptionsWithRequest = {
     jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
