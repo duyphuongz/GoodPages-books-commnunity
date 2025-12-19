@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import { changePasswordSchema, signInSchema, signUpSchema, verifyOtpSignUpSchema } from "../validations/auth.schema";
 import passport from "passport";
+import logger from "../configs/winston.config";
 
 const signInMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
@@ -15,9 +16,12 @@ const signInMiddleware = (req: Request, res: Response, next: NextFunction) => {
 const signUpMiddleware = (req: Request, res: Response, next: NextFunction) => {
     try {
         const parsedData = signUpSchema.parse(req.body);
+        logger.info(">>> parsedData:", parsedData);
+
         req.body = parsedData;
         next();
     } catch (error) {
+        logger.info(">>> Error at signUpMiddleware:", error);
         throw error;
     }
 }
@@ -32,8 +36,9 @@ const verifyOtpSignUpMiddleware = async (req: Request, res: Response, next: Next
     }
 }
 
-const validateToken = () => {
-    return passport.authenticate("jwt", { session: false });
+const validateToken = async (req: Request, res: Response, next: NextFunction) => {
+    console.log(">>> validating");
+    return await passport.authenticate("jwt", { session: false })(req: Request, res: Response, next: NextFunction);
 }
 
 const changePasswordMiddleware = (req: Request, res: Response, next: NextFunction) => {
@@ -48,11 +53,16 @@ const changePasswordMiddleware = (req: Request, res: Response, next: NextFunctio
 }
 
 const isAdmin = (req: Request, res: Response, next: NextFunction) => {
+    console.log(">>> authorize Admin");
     try {
         const { role } = req.user as { username: string, email: string, role: string } || "UNAUTHORIZE";
+        console.log(">>> req.user:", req.user);
+
         if ("ADMIN" == role) {
+            console.log(">>> admin authorize successfully");
             next();
         } else {
+            console.log(">>> admin authorize successfully");
             throw new Error("Your role is unauthorize");
         }
     } catch (error) {

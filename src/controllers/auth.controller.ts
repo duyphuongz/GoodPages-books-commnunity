@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { request, Request, Response } from "express";
 import { signAccessToken, signInByUsername, signRefreshToken, signUp, verifyOtp } from "../services/auth.service";
 import { comparePassword, hashPassword } from "../utils/bcrypt.util";
 import { findUserByEmail, findUserByUsername, updatePasswordOfUser } from "../services/user.service";
@@ -8,66 +8,94 @@ import { changePasswordMapper, signInMapper, signUpMapper } from "../mappers/aut
 import HTTP_STATUS from "../constants/httpStatus.constanst";
 import { RestResponse, SignInResponse, UserWithRole, UserWithRoleOrNull } from "../type";
 import { generateOtp } from "../utils/string.util";
-import { extractRecord, setNewRecord } from "../services/redis.service";
+import { setNewRecord } from "../services/redis.service";
 import { generateSendOTPTemplate, sendEmail } from "../services/email.service";
 import logger from "../configs/winston.config";
 
 
 const signUpController = async (req: Request, res: Response) => {
+    try {
+        logger.info(">>> [signUpController]: started signUpController");
+        const { username, email, password, confirmPassword } = req.body;
+        console.log(">>> req.body:", req.body);
+
+        const isUsernamExisted = await findUserByUsername(username);
+
+        if (isUsernamExisted != null) {
+            logger.info(`>>> [signUpController]: username ${username} is already existed`);
+            throw new Error("Username has been used");
+        }
+        logger.info(`>>> [signUpController]: username: ${username} is not existed`);
+
+        const isEmailExisted = await findUserByEmail(username);
+        if (isEmailExisted != null) {
+            logger.info(`>>> [signUpController]: email ${email} is already existed`);
+            throw new Error("Email has been used");
+        }
+        logger.info(`>>> [signUpController]: email ${email} is not existed`);
+
+        if (password != confirmPassword) {
+            logger.info(">>> [signUpController]: password and confirm password is not matched");
+            throw new Error("Password and Confirm Password is not matched");
+        }
+
+        const otp = generateOtp();
+        console.log(">>> otp:", otp);
+        console.log(`>>> otp for ${email}`, otp);
+
+        const pendingUser = {
+            otp,
+            username,
+            email,
+            password
+        };
+
+        const redisResult = await setNewRecord(`otp:${email}`, pendingUser);
+        logger.info(">>> [signUpController]: set pending user to redis successfully");
+        console.log(">>> redisResult: ", redisResult);
+
+        const emailOtpTemplate = generateSendOTPTemplate(email, otp);
+
+        const emailResult = await sendEmail({
+            to: email,
+            subject: "GoodPages OTP Verification",
+            html: emailOtpTemplate
+        });
+        logger.info(">>> [signUpController]: OTP sent email:", email);
+        console.log(">>> emailResult:", emailResult);
+
+        const response: RestResponse = {
+            statusCode: HTTP_STATUS.CREATED,
+            isSuccess: true,
+            message: "SEND OTP EMAIL SUCCESSFULLY",
+            data: {
+                message: "OTP sent to email: " + email
+            },
+            error: null
+        }
+
+        return res.status(HTTP_STATUS.CREATED).json(responseMapper(response));
+    } catch (error) {
+        throw error;
+    }
+};
+
+const signUpTestController = async (req: Request, res: Response) => {
     const { username, email, password, confirmPassword } = req.body;
-    console.log(">>> username:", username);
-    console.log(">> password:", password);
+    const hashedPassword = await hashPassword(password);
+    const result = await signUp({ username, password: hashedPassword, email });
 
-    const isUsernamExisted = await findUserByUsername(username);
-    console.log(">>> existedUser:", isUsernamExisted);
+    const [accessToken, refreshToken] = await Promise.all([signAccessToken(result), signRefreshToken(result)]);
+    const responseData = await signUpMapper(result, accessToken, refreshToken);
 
-    if (isUsernamExisted != null) {
-        throw new Error("Username has been used");
-    }
-
-    const isEmailExisted = await findUserByEmail(username);
-    if (isEmailExisted != null) {
-        throw new Error("Email has been used");
-    }
-
-    if (password != confirmPassword) {
-        throw new Error("Password and Confirm Password is not matched");
-    }
-
-    const otp = generateOtp();
-    console.log(`>>> otp for ${email}`, otp);
-
-    const pendingUser = {
-        otp,
-        username,
-        email,
-        password
-    };
-
-    const redisResult = await setNewRecord(`otp:${email}`, pendingUser);
-    console.log(">>> redisResult: ", redisResult);
-
-    const emailOtpTemplate = generateSendOTPTemplate(email, otp);
-
-    const emailResult = await sendEmail({
-        to: email,
-        subject: "GoodPages OTP Verification",
-        html: emailOtpTemplate
-    });
-    console.log(">>> emailResult:", emailResult);
-
-    const response: RestResponse = {
+    return res.status(HTTP_STATUS.CREATED).json(responseMapper({
         statusCode: HTTP_STATUS.CREATED,
         isSuccess: true,
-        message: "SEND OTP EMAIL SUCCESSFULLY",
-        data: {
-            message: "OTP sent to email: " + email
-        },
+        message: "SIGN UP SUCCESSFULLY",
+        data: responseData,
         error: null
-    }
-
-    return res.status(HTTP_STATUS.CREATED).json(responseMapper(response));
-};
+    }))
+}
 
 const verifyOtpAndSignUpController = async (req: Request, res: Response) => {
     try {
@@ -100,8 +128,6 @@ const verifyOtpAndSignUpController = async (req: Request, res: Response) => {
 
 const signInController = async (req: Request, res: Response) => {
     const { username, password } = req.body;
-    logger.info("username:", username);
-    logger.info("password:", password);
     console.log(">>> username:", username);
     console.log(">>> password:", password);
 
@@ -171,6 +197,7 @@ const changePasswordController = async (req: Request, res: Response) => {
 
 export {
     signInController,
+    signUpTestController,
     verifyOtpAndSignUpController,
     signUpController,
     changePasswordController

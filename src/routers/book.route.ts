@@ -11,7 +11,7 @@ bookRoute.get("/search", searchBookMiddleware, searchBookController);
 
 //CRUD Book for admin
 bookRoute.get("", getBooksPagingController);
-bookRoute.post("", validateToken, isAdmin, upload.single("picture"), createBookMiddleware, createBookController);
+bookRoute.post("", validateToken(), isAdmin, upload.single("picture"), createBookMiddleware, createBookController);
 bookRoute.put("/:bookId", validateToken, isAdmin, upload.single("picture"), updateBookMiddleware, updateBookController);
 bookRoute.delete("/:bookId", validateToken, isAdmin, deleteBookMiddleware, deleteBookController);
 

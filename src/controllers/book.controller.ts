@@ -7,6 +7,7 @@ import fs from 'fs';
 import prisma from "../configs/prisma.client.config";
 import { BookStatus } from "../generated/prisma/enums";
 import { MetaPaging } from "../type";
+import logger from "../configs/winston.config";
 
 const getBooksHomepage = async (req: Request, res: Response) => {
     try {
@@ -78,8 +79,9 @@ const getBooksPagingController = async (req: Request, res: Response) => {
     }
 }
 
-const createBookController = async (req: Request, res: Response, next: NextFunction) => {
+const createBookController = async (req: Request, res: Response) => {
     try {
+        logger.info(">>> [createBookController]: started controller");
         let imageCloudUrl = "Image not found on cloud";
 
         const {
@@ -95,6 +97,7 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
             authorsIdRaw,
             genresIdRaw
         } = req.body;
+        console.log(">>> req.body:", req.body);
 
         let authorsId: number[] = []; //['1','2','3'] || "1,2,3"
 
@@ -105,6 +108,7 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
         } else if (typeof authorsIdRaw === "string") {
             authorsId = authorsIdRaw.split(',').map((item) => Number(item.trim()));
         }
+        console.log(">>> authorsId:", authorsId);
 
         let genresId: number[] = [];
 
@@ -115,6 +119,8 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
         } else if (typeof genresIdRaw === "string") {
             genresId = genresIdRaw.split(',').map((item) => Number(item.trim()));
         }
+
+        console.log(">>> genresId:", genresId);
 
         const newBook = {
             title,
@@ -132,6 +138,8 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
         };
 
         const result = await addBook(newBook);
+        logger.info(">>> [createBookController]: add new book successfully");
+        console.log(">>> result:", result);
 
         let filePath = "";
         if (req.file) {
@@ -143,7 +151,6 @@ const createBookController = async (req: Request, res: Response, next: NextFunct
         };
 
         const responseData = bookWithAuthorAndGenresMapper(result);
-
         return res.status(HTTP_STATUS.CREATED).json(responseMapper({
             statusCode: HTTP_STATUS.CREATED,
             isSuccess: true,
