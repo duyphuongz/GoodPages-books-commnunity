@@ -1,5 +1,5 @@
 import { Book, Prisma } from "../generated/prisma/client";
-import { BookResponse, booksPagingResponse } from "../responseDtos/book.dto";
+import { BookResponseDTO, booksPagingResponse } from "../responseDtos/book.dto";
 import { BookWithAuthorsWithGenres, MetaPaging } from "../type";
 
 const booksPagingMapper = (books: Book[], meta: MetaPaging) => {
@@ -32,7 +32,7 @@ const bookWithAuthorAndGenresMapper = (book: BookWithAuthorsWithGenres) => {
         updatedAt
     } = book;
 
-    return new BookResponse({
+    return new BookResponseDTO({
         id,
         title,
         description,

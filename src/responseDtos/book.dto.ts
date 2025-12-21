@@ -1,5 +1,5 @@
 import { Book, BookFormat } from "../generated/prisma/client";
-import { MetaPaging } from "../type";
+import { BookResponse, MetaPaging } from "../type";
 
 class booksPagingResponse {
     books: Book[] | any;
@@ -17,7 +17,7 @@ class booksPagingResponse {
     }
 }
 
-class BookResponse {
+class BookResponseDTO {
     id: number;
     title: string;
     description: string | null;
@@ -58,27 +58,7 @@ class BookResponse {
         genres,
         createdAt,
         updatedAt
-    }: {
-        id: number,
-        title: string,
-        description: string | null,
-        publishDate: Date | null,
-        language: string,
-        pageCount: number | null,
-        isbn10: string | null,
-        isbn13: string | null,
-        publisher: string | null,
-        format: BookFormat | null,
-        averageRating: number,
-        ratingsCount: number,
-        reviewsCount: number,
-        coverImageUrl: string | null,
-        publicId: string | null,
-        authors: { name: string; id: number; photoUrl: string | null; }[],
-        genres: { id: number; genresName: string; }[],
-        createdAt: Date,
-        updatedAt: Date
-    }) {
+    }: BookResponse) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -103,7 +83,7 @@ class BookResponse {
 
 export {
     booksPagingResponse,
-    BookResponse
+    BookResponseDTO
 }
 
 

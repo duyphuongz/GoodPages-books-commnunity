@@ -6,7 +6,7 @@ import { responseMapper } from "../mappers/rest-response.mapper";
 import fs from 'fs';
 import prisma from "../configs/prisma.client.config";
 import { BookStatus } from "../generated/prisma/enums";
-import { MetaPaging } from "../type";
+import { BookResponse, MetaPaging } from "../type";
 import logger from "../configs/winston.config";
 import { uploadSingleImage } from "../services/cloudinary.service";
 
@@ -161,7 +161,7 @@ const createBookController = async (req: Request, res: Response) => {
             });
         };
 
-        const responseData = bookWithAuthorAndGenresMapper(newBook);
+        const responseData: BookResponse = bookWithAuthorAndGenresMapper(newBook);
         return res.status(HTTP_STATUS.CREATED).json(responseMapper({
             statusCode: HTTP_STATUS.CREATED,
             isSuccess: true,
@@ -230,14 +230,17 @@ const updateBookController = async (req: Request, res: Response, next: NextFunct
 
         if (req.file) {
             let filePath = "";
-            let uploadImageUrl = "";
             filePath = req.file.path;
+
+            const cloudPath = `books/${result.id}:${result.title}`;
+
+            const uploadResult = await uploadSingleImage(filePath, cloudPath);
+
+            result = await updateBookImage(result.id, uploadResult.url, uploadResult.publicId);
 
             fs.unlink(filePath, (err) => {
                 if (err) console.error('Error deleting local file:', err);
             });
-
-            result = await updateBookImage(result.id, uploadImageUrl, "unvailable");
         };
 
         const responseData = bookWithAuthorAndGenresMapper(result);

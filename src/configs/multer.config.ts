@@ -16,7 +16,15 @@ const storage = multer.diskStorage({
     filename: (_req, file, cb) => {
         const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
         cb(null, uniqueSuffix + path.extname(file.originalname));
-    },
+    }
 });
 
-export const upload = multer({ storage });
+export const upload = multer({
+    storage,
+    fileFilter: (_req, _file, cb) => {
+        _file.mimetype = 
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024
+    }
+});

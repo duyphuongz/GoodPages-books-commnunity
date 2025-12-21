@@ -61,6 +61,28 @@ interface UpdateBookEntity {
     genresId: number[]
 }
 
+interface BookResponse {
+    id: number,
+    title: string,
+    description: string | null,
+    publishDate: Date | null,
+    language: string,
+    pageCount: number | null,
+    isbn10: string | null,
+    isbn13: string | null,
+    publisher: string | null,
+    format: BookFormat | null,
+    averageRating: number,
+    ratingsCount: number,
+    reviewsCount: number,
+    coverImageUrl: string | null,
+    publicId: string | null,
+    authors: { name: string; id: number; photoUrl: string | null; }[],
+    genres: { id: number; genresName: string; }[],
+    createdAt: Date,
+    updatedAt: Date
+}
+
 type BookWithAuthorsWithGenres = Prisma.BookGetPayload<{
     include: {
         authors: {
